@@ -1,9 +1,5 @@
 # Hi 👋, I'm Jannes
 
-### A passionate Javascript developer
-
-- 🔭 I'm currently working on **Sakura Bot** **[Website](https://sakurabot.qzz.io)**
-
 - 🌱 I'm currently learning **Vue**
 
 - 👨‍💻 All of my Infos are available at **[https://n1yshi.dev](https://n1yshi.dev)**
