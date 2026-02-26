@@ -1,6 +1,6 @@
 # Hi 👋, I'm Jannes
 
-- 🌱 I'm currently learning **Vue**
+- 🌱 I'm currently learning **Rust**
 
 - 👨‍💻 All of my Infos are available at **[https://n1yshi.dev](https://n1yshi.dev)**
 
