@@ -1,4 +1,4 @@
-# Hi 👋, I'm Jannes
+## Hi 👋, I'm Jannes
 
 - I'm a passionate Fullstack Webdev
 - Romance anime **LOVER**
