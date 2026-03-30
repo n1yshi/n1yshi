@@ -1,7 +1,6 @@
 ## Hi 👋, I'm Jannes
 
 - I'm a passionate Fullstack Webdev
-- Romance anime **LOVER**
 - **[My Website](https://n1yshi.dev)**
 
 <h3 align="left">Languages and Tools:</h3>
