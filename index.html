@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>n1yshi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="bg-banner" id="bg-banner"></div>
+  <div class="bg-overlay"></div>
+
+  <div class="container">
+    <div class="topbar">
+      <span class="site-name">n1yshi</span>
+      <span class="links">
+        <a href="https://github.com/n1yshi">github</a> ·
+        <a href="https://anilist.co/user/n1yshi/">anilist</a>
+      </span>
+    </div>
+
+    <nav class="main-nav">
+      <a href="index.html" aria-current="page">home</a>
+      <a href="anime-list.html">anime list</a>
+    </nav>
+
+    <div class="main">
+      <aside class="sidebar">
+        <img class="profile-pic" id="profile-pic" src="" alt="avatar">
+
+        <div class="box">
+          <div class="side-title">about</div>
+          <p>I build things on the internet. I love/enjoy anime and manga/light novels.</p>
+          <div class="sidebar-links">
+            <a href="https://github.com/n1yshi"><img src="https://github.githubassets.com/favicons/favicon-dark.svg"
+                alt=""> github</a>
+            <a href="https://anilist.co/user/n1yshi/"><img src="https://anilist.co/img/icons/favicon-32x32.png" alt="">
+              anilist</a>
+            <a href="https://twitch.tv/n1ysly"><img src="https://www.twitch.tv/favicon.ico" alt=""> twitch</a>
+            <a href="https://www.youtube.com/@n1yshi"><img src="https://www.youtube.com/favicon.ico" alt=""> youtube</a>
+          </div>
+        </div>
+
+        <div class="box" id="stats-box">
+          <div class="side-title">anime stats</div>
+          <div class="stat-rows">
+            <div class="stat-line"><span>Total Anime</span><b id="stat-count">-</b></div>
+            <div class="stat-line"><span>Episodes</span><b id="stat-episodes">-</b></div>
+            <div class="stat-line"><span>Minutes</span><b id="stat-minutes">-</b></div>
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="side-title">skills</div>
+          <div class="tool-grid">
+            <a class="tool-link" href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank"><img
+                class="tool-icon" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS3"></a>
+            <a class="tool-link" href="https://www.djangoproject.com/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/django/django-plain.svg" alt="Django"></a>
+            <a class="tool-link" href="https://expressjs.com/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original.svg" alt="Express"></a>
+            <a class="tool-link" href="https://git-scm.com/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git"></a>
+            <a class="tool-link" href="https://go.dev/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/go/go-original-wordmark.svg" alt="Go"></a>
+            <a class="tool-link" href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank"><img
+                class="tool-icon" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML5"></a>
+            <a class="tool-link" href="https://www.java.com/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg" alt="Java"></a>
+            <a class="tool-link" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank"><img
+                class="tool-icon" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript"></a>
+            <a class="tool-link" href="https://www.kernel.org/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linux/linux-original.svg" alt="Linux"></a>
+            <a class="tool-link" href="https://nodejs.org/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg" alt="Node.js"></a>
+            <a class="tool-link" href="https://www.python.org/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python"></a>
+            <a class="tool-link" href="https://react.dev/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg" alt="React"></a>
+            <a class="tool-link" href="https://sass-lang.com/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/sass/sass-original.svg" alt="Sass"></a>
+            <a class="tool-link" href="https://spring.io/" target="_blank"><img class="tool-icon"
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/spring/spring-original.svg" alt="Spring"></a>
+          </div>
+        </div>
+
+        <div class="box" id="status-box">
+          <div class="side-title">status</div>
+          <div id="status-indicator">
+            <div class="status-name"><a href="https://azuso.n1yshi.dev">Azuso - Anime Streaming API</a></div>
+            <div class="status-row">
+              <span class="status-dot" id="status-dot"></span>
+              <span id="status-text">checking...</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="content">
+        <h2 class="content-title">welcome</h2>
+        <div class="welcome-box">
+          <div class="welcome-text">welcome to my site</div>
+          <img src="assets/img/welcome-blinks.gif" alt="welcome blinks" class="welcome-blinks">
+        </div>
+
+        <h2 class="content-title">projects</h2>
+        <ul class="project-list">
+          <li><a href="https://github.com/n1yshi/Aegis-AntiBot">Aegis-AntiBot</a><span>Bot detection and request
+              validation with fingerprinting, proof-of-work challenges, and session-based API protection.</span></li>
+          <li><a href="https://github.com/n1yshi/ReAnime-API">ReAnime-API</a><span>Streaming API for ReAnime — search,
+              episodes, and stream extraction.</span></li>
+          <li><a href="https://github.com/n1yshi/Anikoto-API">Anikoto-API</a><span>JS provider for
+              Anikoto/Megaplay/VidWish anime streams with search, episode listing, and stream extraction.</span></li>
+        </ul>
+
+        <h2 class="content-title">anime favorites</h2>
+        <div class="fav-display">
+          <div class="fav-category">
+            <div class="fav-header">Character</div>
+            <div class="fav-items" id="fav-characters"></div>
+          </div>
+          <div class="fav-category">
+            <div class="fav-header">Anime</div>
+            <div class="fav-items" id="fav-animes"></div>
+          </div>
+          <div class="fav-category">
+            <div class="fav-header">Manga</div>
+            <div class="fav-items" id="fav-mangas"></div>
+          </div>
+        </div>
+
+        <h2 class="content-title">contact</h2>
+        <p>If you need to reach me, these are the best channels:</p>
+        <dl class="status-list">
+          <div>
+            <dt>discord</dt>
+            <dd>n1yshi</dd>
+          </div>
+          <div>
+            <dt>github</dt>
+            <dd><a href="https://github.com/n1yshi">n1yshi</a></dd>
+          </div>
+          <div>
+            <dt>email</dt>
+            <dd><a href="mailto:support@n1yshi.dev">support@n1yshi.dev</a></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

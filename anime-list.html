@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>my anime list</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-banner" id="bg-banner"></div>
+<div class="bg-overlay"></div>
+
+<div class="container">
+  <div class="topbar">
+    <span class="site-name">n1yshi</span>
+    <span class="links">
+      <a href="https://github.com/n1yshi">github</a> ·
+      <a href="https://anilist.co/user/n1yshi/">anilist</a>
+    </span>
+  </div>
+
+  <nav class="main-nav">
+    <a href="index.html">home</a>
+    <a href="anime-list.html" aria-current="page">anime list</a>
+  </nav>
+
+  <div class="main">
+    <div class="content single-column">
+      <h2 class="content-title">anime list</h2>
+
+      <div id="anime-stats"></div>
+
+      <h2 class="content-title">status</h2>
+      <ul class="status-grid" id="anime-status"></ul>
+
+      <h2 class="content-title">list</h2>
+      <div id="anime-loading">loading list...</div>
+      <div class="table-wrap" id="anime-table-wrap" style="display:none">
+        <table class="anime-table">
+          <thead>
+            <tr>
+              <th>MAL ID</th>
+              <th>Title</th>
+              <th>Episodes</th>
+              <th>Watched</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th>Started</th>
+              <th>Finished</th>
+              <th>Rewatches</th>
+            </tr>
+          </thead>
+          <tbody id="anime-tbody"></tbody>
+        </table>
+      </div>
+      <div id="anime-error" class="note" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" style="display:none">
+  <div class="modal-panel" id="modal-panel">
+    <div class="modal-header">
+      <span class="modal-back" id="modal-back">&#8592; back</span>
+      <span class="modal-close" id="modal-close">close</span>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <div class="modal-info" id="modal-info"></div>
+      <div class="modal-episodes" id="modal-episodes"></div>
+    </div>
+    <div class="modal-episode-detail" id="modal-episode-detail" style="display:none">
+      <div class="ep-detail-cover-wrap">
+        <img class="ep-detail-cover" id="ep-detail-cover" src="" alt="">
+      </div>
+      <div class="ep-detail-info">
+        <div class="ep-detail-num" id="ep-detail-num"></div>
+        <div class="ep-detail-title" id="ep-detail-title"></div>
+        <div class="ep-detail-desc" id="ep-detail-desc"></div>
+        <div class="ep-detail-streams">
+          <label>Stream:</label>
+          <select class="ep-stream-select" id="ep-stream-select">
+            <option>loading streams...</option>
+          </select>
+        </div>
+        <div class="ep-detail-audio">
+          <label>Audio:</label>
+          <button class="audio-toggle active" data-audio="sub" id="audio-sub">Sub</button>
+          <button class="audio-toggle" data-audio="dub" id="audio-dub">Dub</button>
+        </div>
+        <button class="ep-play-btn" id="ep-play-btn">&#9654; Play</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(async function () {
+  const USERNAME = 'n1yshi';
+
+  const QUERY = `
+    query ($username: String) {
+      MediaListCollection(userName: $username, type: ANIME) {
+        lists {
+          entries {
+            score
+            progress
+            status
+            repeat
+            startedAt { year month day }
+            completedAt { year month day }
+            media {
+              id
+              idMal
+              title { romaji english }
+              episodes
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  function fmtDate(d) {
+    if (!d || !d.year) return '';
+    const y = d.year;
+    const m = String(d.month || 1).padStart(2, '0');
+    const day = String(d.day || 1).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function statusLabel(s) {
+    const map = {
+      COMPLETED: 'Completed',
+      CURRENT: 'Watching',
+      PLANNING: 'Plan to Watch',
+      DROPPED: 'Dropped',
+      PAUSED: 'On-Hold',
+      REPEATING: 'Watching',
+    };
+    return map[s] || s;
+  }
+
+  function statusClass(s) {
+    const map = {
+      COMPLETED: 'status-completed',
+      CURRENT: 'status-watching',
+      PLANNING: 'status-plan-to-watch',
+      DROPPED: 'status-dropped',
+      PAUSED: 'status-on-hold',
+      REPEATING: 'status-watching',
+    };
+    return map[s] || '';
+  }
+
+  function scoreClass(score) {
+    if (score === 0) return 'score-none';
+    if (score >= 90) return 'score-high';
+    if (score >= 70) return 'score-good';
+    if (score >= 50) return 'score-mid';
+    return 'score-low';
+  }
+
+  const LIST_CACHE_KEY = 'anilist_list_v1';
+  const LIST_CACHE_TTL = 3600000;
+
+  function getCachedList() {
+    try {
+      var cached = localStorage.getItem(LIST_CACHE_KEY);
+      if (cached) {
+        var parsed = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < LIST_CACHE_TTL) return parsed.data;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function setCachedList(data) {
+    try { localStorage.setItem(LIST_CACHE_KEY, JSON.stringify({ data: data, timestamp: Date.now() })); } catch (e) {}
+  }
+
+  const loading = document.getElementById('anime-loading');
+  const tableWrap = document.getElementById('anime-table-wrap');
+  const tbody = document.getElementById('anime-tbody');
+  const errorDiv = document.getElementById('anime-error');
+
+  function buildList(json) {
+    if (json.errors) {
+      errorDiv.textContent = json.errors[0]?.message || 'failed to load';
+      errorDiv.style.display = 'block';
+      loading.style.display = 'none';
+      return;
+    }
+
+    const lists = json.data?.MediaListCollection?.lists || [];
+    const all = lists.flatMap(l => l.entries || []);
+
+    if (!all.length) {
+      errorDiv.textContent = 'no entries found — make sure your list is public on anilist';
+      errorDiv.style.display = 'block';
+      loading.style.display = 'none';
+      return;
+    }
+
+    // Stats
+    const total = all.length;
+    const scored = all.filter(e => e.score > 0);
+    const avgScore = scored.length
+      ? (scored.reduce((s, e) => s + e.score, 0) / scored.length).toFixed(2)
+      : '0.00';
+    const completed = all.filter(e => e.status === 'COMPLETED').length;
+
+    document.getElementById('anime-stats').innerHTML =
+      '<div class="anime-summary">' +
+        '<div class="stat-card"><b>' + total + '</b><span>entries</span></div>' +
+        '<div class="stat-card"><b>' + scored.length + '</b><span>scored</span></div>' +
+        '<div class="stat-card"><b>' + avgScore + '</b><span>average score</span></div>' +
+        '<div class="stat-card"><b>' + completed + '</b><span>completed</span></div>' +
+      '</div>';
+
+    // Status counts
+    const statusOrder = ['COMPLETED', 'PLANNING', 'CURRENT', 'DROPPED', 'PAUSED'];
+    const statusCounts = {};
+    all.forEach(e => { statusCounts[e.status] = (statusCounts[e.status] || 0) + 1; });
+
+    const statusContainer = document.getElementById('anime-status');
+    statusContainer.innerHTML =
+      statusOrder.map(s =>
+        '<li data-status="' + s + '">' + statusLabel(s) + '<b>' + (statusCounts[s] || 0) + '</b></li>'
+      ).join('');
+
+    let activeFilter = null;
+
+    function filterTable(status) {
+      if (activeFilter === status) {
+        activeFilter = null;
+      } else {
+        activeFilter = status;
+      }
+      statusContainer.querySelectorAll('li').forEach(li => {
+        li.classList.toggle('active', li.dataset.status === activeFilter);
+      });
+      document.querySelectorAll('#anime-tbody tr').forEach(row => {
+        row.style.display = (!activeFilter || row.dataset.status === activeFilter) ? '' : 'none';
+      });
+    }
+
+    statusContainer.querySelectorAll('li').forEach(li => {
+      li.addEventListener('click', function () {
+        filterTable(this.dataset.status);
+      });
+    });
+
+    // Sort by score descending, then by title
+    all.sort((a, b) => (b.score || 0) - (a.score || 0) || (a.media.title.romaji || '').localeCompare(b.media.title.romaji || ''));
+
+    // Build table rows
+    const fragment = document.createDocumentFragment();
+
+    all.forEach(e => {
+      const m = e.media;
+      const title = m.title?.english || m.title?.romaji || 'unknown';
+      const malId = m.idMal;
+      const malLink = malId ? 'https://myanimelist.net/anime/' + malId : null;
+      const started = fmtDate(e.startedAt);
+      const finished = fmtDate(e.completedAt);
+      const rewatches = e.repeat || 0;
+
+      const tr = document.createElement('tr');
+      tr.dataset.status = e.status;
+      tr.dataset.anilistId = m.id;
+      tr.innerHTML =
+        '<td>' +
+          (malLink
+            ? '<a href="' + malLink + '" target="_blank">' + malId + '</a>'
+            : '<a href="https://anilist.co/anime/' + m.id + '" target="_blank">' + m.id + '</a>'
+          ) +
+        '</td>' +
+        '<td class="title-cell" title="' + title.replace(/"/g, '&quot;') + '">' + title + '</td>' +
+        '<td>' + (m.episodes || '?') + '</td>' +
+        '<td>' + (e.progress || 0) + '</td>' +
+        '<td class="score-cell ' + scoreClass(e.score) + '">' + (e.score || '-') + '</td>' +
+        '<td><span class="status-pill ' + statusClass(e.status) + '">' + statusLabel(e.status) + '</span></td>' +
+        '<td>' + started + '</td>' +
+        '<td>' + finished + '</td>' +
+        '<td>' + rewatches + '</td>';
+
+      fragment.appendChild(tr);
+    });
+
+    tbody.appendChild(fragment);
+    tableWrap.style.display = '';
+    loading.style.display = 'none';
+  }
+
+  try {
+    var cached = getCachedList();
+    if (cached) {
+      buildList(cached);
+    } else {
+      var controller = new AbortController();
+      var timeout = setTimeout(function () { controller.abort(); }, 15000);
+      var res = await fetch('https://graphql.anilist.co', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: QUERY, variables: { username: USERNAME } }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      var json = await res.json();
+      if (!json.errors) setCachedList(json);
+      buildList(json);
+    }
+  } catch (err) {
+    errorDiv.textContent = 'failed to load: ' + err.message;
+    errorDiv.style.display = 'block';
+    loading.style.display = 'none';
+  }
+
+  // === Modal logic ===
+  const AZUSO = 'https://azuso.n1yshi.dev';
+
+  function $(id) { return document.getElementById(id); }
+
+  const overlay = $('modal-overlay');
+  const panel = $('modal-panel');
+  const body = $('modal-body');
+  const infoEl = $('modal-info');
+  const epListEl = $('modal-episodes');
+  const closeBtn = $('modal-close');
+  const backBtn = $('modal-back');
+  const detailEl = $('modal-episode-detail');
+  const detailCover = $('ep-detail-cover');
+  const detailNum = $('ep-detail-num');
+  const detailTitle = $('ep-detail-title');
+  const detailDesc = $('ep-detail-desc');
+  const streamSelect = $('ep-stream-select');
+  const playBtn = $('ep-play-btn');
+
+  var currentAnilistId = null;
+  var currentEpisodeData = null;
+  var currentAudio = 'sub';
+
+  closeBtn.addEventListener('click', closeModal);
+  backBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+
+  // Audio toggle
+  document.getElementById('audio-sub').addEventListener('click', function () { setAudio('sub'); });
+  document.getElementById('audio-dub').addEventListener('click', function () { setAudio('dub'); });
+
+  function setAudio(audio) {
+    currentAudio = audio;
+    document.querySelectorAll('.audio-toggle').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.audio === audio);
+    });
+    if (currentEpisodeData) {
+      streamSelect.innerHTML = '<option value="">loading streams...</option>';
+      fetchAllStreams();
+    }
+  }
+
+  // Row click: open modal (skip if clicking a link inside the row)
+  tbody.addEventListener('click', function (e) {
+    var link = e.target.closest('a');
+    if (link) return;
+    var row = e.target.closest('tr');
+    if (!row) return;
+    var id = row.dataset.anilistId;
+    if (!id) return;
+    openModal(id);
+  });
+
+  function openModal(id) {
+    currentAnilistId = id;
+    overlay.style.display = 'flex';
+    infoEl.innerHTML = '<div class="modal-loading">loading...</div>';
+    epListEl.innerHTML = '';
+    detailEl.style.display = 'none';
+    body.style.display = '';
+    fetchInfo(id);
+    fetchEpisodes(id);
+  }
+
+  function closeModal() {
+    overlay.style.display = 'none';
+    detailEl.style.display = 'none';
+    currentAnilistId = null;
+    currentEpisodeData = null;
+  }
+
+  var STREAM_PROVIDERS = ['anikoto', 'anineko', 'kiwi', 'pahe', 'zoro', 'arc', 'miruro'];
+
+  function showEpisodeDetail(epData) {
+    currentEpisodeData = epData;
+    body.style.display = 'none';
+    detailEl.style.display = 'flex';
+    detailCover.src = epData.image || '';
+    detailCover.alt = 'Episode ' + epData.number;
+    detailNum.textContent = 'Episode ' + epData.number;
+    detailTitle.textContent = epData.title || 'Episode ' + epData.number;
+    detailDesc.textContent = epData.description || '';
+    streamSelect.innerHTML = '<option value="">loading streams...</option>';
+    fetchAllStreams();
+  }
+
+  function extractStreams(data) {
+    if (Array.isArray(data.streams) && data.streams.length) return data.streams;
+    var candidates = [currentAudio, 'ssub', 'sdub', 'sub', 'dub'];
+    for (var i = 0; i < candidates.length; i++) {
+      var section = data[candidates[i]];
+      if (section && Array.isArray(section.streams) && section.streams.length) {
+        return section.streams;
+      }
+    }
+    return null;
+  }
+
+  async function fetchAllStreams() {
+    var fetches = STREAM_PROVIDERS.map(function (prov) {
+      return fetch(AZUSO + '/watch/' + prov + '/' + currentAnilistId + '/' + currentAudio + '/' + currentEpisodeData.number)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; });
+    });
+
+    var results = await Promise.all(fetches);
+    var allStreams = [];
+    results.forEach(function (data, idx) {
+      if (!data) return;
+      var streams = extractStreams(data);
+      if (streams) {
+        streams.forEach(function (s) { s._provider = STREAM_PROVIDERS[idx]; });
+        allStreams = allStreams.concat(streams);
+      }
+    });
+
+    streamSelect.innerHTML = '';
+    if (!allStreams.length) {
+      streamSelect.innerHTML = '<option value="">no streams available</option>';
+      return;
+    }
+
+    allStreams.forEach(function (s, idx) {
+      var opt = document.createElement('option');
+      opt.value = idx;
+      var broken = (s.type === 'hls' || s.url.match(/\.m3u8/)) && !s.embed;
+      opt.textContent = s._provider + ' \u00b7 ' + s.server + ' (' + s.type + ')' + (broken ? ' (broken)' : '');
+      opt.stream = s;
+      streamSelect.appendChild(opt);
+    });
+  }
+
+  playBtn.addEventListener('click', function () {
+    var opt = streamSelect.options[streamSelect.selectedIndex];
+    if (!opt || !opt.stream || !opt.stream.url) return;
+    var stream = opt.stream;
+    var url = stream.url;
+
+    // Prefer embed page URL when available (works in browser tab)
+    if (stream.embed) {
+      window.open(stream.embed, '_blank');
+      return;
+    }
+
+    var isHls = url.match(/\.m3u8/);
+
+    if (isHls) {
+      var playerUrl = 'player.html?url=' + encodeURIComponent(url);
+      if (stream.referer) playerUrl += '&referer=' + encodeURIComponent(stream.referer);
+      window.open(playerUrl, '_blank');
+    } else {
+      window.open(url, '_blank');
+    }
+  });
+
+  async function fetchInfo(id) {
+    try {
+      var res = await fetch(AZUSO + '/info/' + id);
+      var data = await res.json();
+      renderInfo(data);
+    } catch (e) {
+      infoEl.innerHTML = '<p class="note">failed to load info</p>';
+    }
+  }
+
+  function renderInfo(data) {
+    var title = data.title?.english || data.title?.romaji || data.title?.native || 'unknown';
+    var desc = data.description || 'no description';
+    var cover = data.coverImage?.extraLarge || data.coverImage?.large || '';
+    var episodes = data.episodes || '?';
+    var score = data.averageScore ? (data.averageScore / 10).toFixed(1) : '-';
+
+    infoEl.innerHTML =
+      '<div class="modal-info">' +
+        (cover ? '<img class="modal-cover" src="' + cover + '" alt="">' : '') +
+        '<div class="modal-details">' +
+          '<h3>' + title + '</h3>' +
+          '<p><b>Episodes:</b> ' + episodes + ' | <b>Score:</b> ' + score + '</p>' +
+          '<p>' + desc + '</p>' +
+        '</div>' +
+      '</div>';
+  }
+
+  async function fetchEpisodes(id) {
+    try {
+      var res = await fetch(AZUSO + '/episodes/' + id);
+      var data = await res.json();
+      renderEpisodes(data);
+    } catch (e) {
+      epListEl.innerHTML = '<p class="note">failed to load episodes</p>';
+    }
+  }
+
+  function flattenEpisodes(data, parentKey) {
+    if (!data || typeof data !== 'object') return [];
+    if (Array.isArray(data)) {
+      var result = [];
+      data.forEach(function (v) {
+        if (v && typeof v === 'object' && (v.number || v.episode || v.episodeNumber || v.title)) {
+          if (parentKey) v._provider = parentKey;
+          result.push(v);
+        }
+      });
+      return result;
+    }
+    if (Array.isArray(data.episodes)) return flattenEpisodes(data.episodes, parentKey);
+    if (Array.isArray(data.data)) return flattenEpisodes(data.data, parentKey);
+    if (Array.isArray(data.results)) return flattenEpisodes(data.results, parentKey);
+    if (Array.isArray(data.list)) return flattenEpisodes(data.list, parentKey);
+    var all = [];
+    var validProviders = ['anikoto', 'anineko', 'kiwi', 'pahe', 'zoro', 'arc', 'miruro'];
+    for (var key in data) {
+      var val = data[key];
+      var isProvider = validProviders.indexOf(key) !== -1;
+      var effectiveParent = isProvider ? key : (parentKey || null);
+      if (Array.isArray(val)) {
+        all = all.concat(flattenEpisodes(val, effectiveParent));
+      } else if (val && typeof val === 'object') {
+        all = all.concat(flattenEpisodes(val, effectiveParent));
+      }
+    }
+    return all;
+  }
+
+  function renderEpisodes(data) {
+    var all = flattenEpisodes(data);
+
+    // Group by episode number, collect providers
+    var grouped = {};
+    all.forEach(function (ep) {
+      var num = ep.number || ep.episode || ep.episodeNumber || ep.episode_number;
+      if (!num) return;
+      if (!grouped[num]) {
+        grouped[num] = { number: num, title: '', image: '', description: '', providers: [] };
+      }
+      var g = grouped[num];
+      if (ep.title && !g.title) g.title = ep.title;
+      if ((ep.image || ep.thumbnail || ep.thumb || ep.cover) && !g.image) g.image = ep.image || ep.thumbnail || ep.thumb || ep.cover;
+      if (ep.description && !g.description) g.description = ep.description;
+      var prov = ep.provider || ep._provider;
+      if (prov && g.providers.indexOf(prov) === -1) g.providers.push(prov);
+    });
+
+    var episodes = [];
+    for (var key in grouped) episodes.push(grouped[key]);
+    episodes.sort(function (a, b) { return a.number - b.number; });
+
+    if (!episodes.length) {
+      epListEl.innerHTML = '<p class="note">no episodes available</p>';
+      return;
+    }
+
+    var html = '<h4>Episodes <span class="ep-count">(' + episodes.length + ')</span></h4>';
+    episodes.forEach(function (ep) {
+      var title = ep.title || 'Episode ' + ep.number;
+      var provs = (ep.providers || []).map(function (p) {
+        return '<span class="prov-badge">' + p + '</span>';
+      }).join('');
+      html +=
+        '<div class="modal-episode" data-ep="' + ep.number + '">' +
+          (ep.image ? '<img class="episode-thumb" src="' + ep.image + '" alt="" loading="lazy">' : '<div class="episode-thumb"></div>') +
+          '<div class="episode-meta">' +
+            '<div class="ep-num">EP ' + ep.number + '</div>' +
+            '<div class="ep-title">' + title + '</div>' +
+            '<div class="prov-list">' + (provs || '<span class="no-prov">no providers</span>') + '</div>' +
+          '</div>' +
+        '</div>';
+    });
+    epListEl.innerHTML = html;
+
+    // Episode row click → show detail view with play button
+    epListEl.querySelectorAll('.modal-episode').forEach(function (row) {
+      row.addEventListener('click', function () {
+        var epNum = this.dataset.ep;
+        var epData = null;
+        for (var i = 0; i < episodes.length; i++) {
+          if (String(episodes[i].number) === epNum) {
+            epData = episodes[i];
+            break;
+          }
+        }
+        if (epData) showEpisodeDetail(epData);
+      });
+    });
+  }
+
+
+})();
+</script>
+<script src="script.js"></script>
+</body>
+</html>
