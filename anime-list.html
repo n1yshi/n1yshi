@@ -393,7 +393,7 @@
     currentEpisodeData = null;
   }
 
-  var STREAM_PROVIDERS = ['anikoto', 'anineko', 'kiwi', 'pahe', 'zoro', 'arc', 'miruro'];
+  var STREAM_PROVIDERS = ['animepahe', 'allmanga', 'reanime', 'anikoto', 'animegg', 'anineko', 'anidbapp'];
 
   function showEpisodeDetail(epData) {
     currentEpisodeData = epData;
@@ -422,7 +422,7 @@
 
   async function fetchAllStreams() {
     var fetches = STREAM_PROVIDERS.map(function (prov) {
-      return fetch(AZUSO + '/watch/' + prov + '/' + currentAnilistId + '/' + currentAudio + '/' + currentEpisodeData.number)
+      return fetch(AZUSO + '/watch/' + prov + '/' + currentAnilistId + '/' + currentAudio + '/' + prov + '-' + currentEpisodeData.number)
         .then(function (r) { return r.ok ? r.json() : null; })
         .catch(function () { return null; });
     });
@@ -479,7 +479,7 @@
 
   async function fetchInfo(id) {
     try {
-      var res = await fetch(AZUSO + '/info/' + id);
+      var res = await fetch(AZUSO + '/anime/' + id);
       var data = await res.json();
       renderInfo(data);
     } catch (e) {
@@ -532,7 +532,7 @@
     if (Array.isArray(data.results)) return flattenEpisodes(data.results, parentKey);
     if (Array.isArray(data.list)) return flattenEpisodes(data.list, parentKey);
     var all = [];
-    var validProviders = ['anikoto', 'anineko', 'kiwi', 'pahe', 'zoro', 'arc', 'miruro'];
+    var validProviders = ['animepahe', 'allmanga', 'reanime', 'anikoto', 'animegg', 'anineko', 'anidbapp'];
     for (var key in data) {
       var val = data[key];
       var isProvider = validProviders.indexOf(key) !== -1;

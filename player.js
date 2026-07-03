@@ -120,7 +120,7 @@
 
   async function switchProvider(newProvider) {
     try {
-      var res = await fetch('https://azuso.n1yshi.dev/watch/' + newProvider + '/' + currentAnilistId + '/' + currentAudio + '/' + currentEp);
+      var res = await fetch('https://azuso.n1yshi.dev/watch/' + newProvider + '/' + currentAnilistId + '/' + currentAudio + '/' + newProvider + '-' + currentEp);
       if (!res.ok) return;
       var data = await res.json();
       var candidates = [currentAudio, 'sdub', 'sub', 'dub', 'streams'];
