@@ -109,7 +109,7 @@
     const online = document.getElementById('status-icon-box');
     const start = performance.now();
     try {
-      await fetch('https://azuso.n1yshi.dev', { mode: 'no-cors' });
+      await fetch('https://oracle.n1yshi.dev', { mode: 'no-cors' });
       const ms = Math.round(performance.now() - start);
       recordResult(true);
       setStatus(true, ms);

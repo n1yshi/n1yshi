@@ -3,49 +3,44 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Status — azuso.n1yshi.dev</title>
+  <title>Status &mdash; oracle.n1yshi.dev</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9679;</text></svg>">
 </head>
 <body class="dark">
   <div class="min-h-screen theme-eclipse dark">
 
-    <!-- HEADER -->
     <header class="header-layout">
       <div class="header-inner">
-        <div class="header-left">
-          <span class="header-title">✦ status</span>
-        </div>
         <div class="header-center">
-          <a class="nav-link" href="/">home</a>
-          <a class="nav-link" href="/status/">status</a>
+          <a class="nav-link" href="/#about">about</a>
+          <a class="nav-link" href="/#favorites">favorites</a>
+          <a class="nav-link" href="/#contact">contact</a>
+          <a class="nav-link current" href="/status/">status</a>
         </div>
         <div class="header-right">
-          <span class="theme-toggle" id="theme-toggle">○</span>
+          <span class="theme-toggle" id="theme-toggle">&#9675;</span>
         </div>
       </div>
     </header>
 
-    <!-- MAIN -->
     <main class="max-w-4xl mx-auto my-16 px-4 sm-px-0">
       <div class="flex-col">
 
-        <!-- LOADING -->
         <div id="loading-state">
           <div class="status-section">
             <div class="skeleton skeleton-icon"></div>
             <div class="skeleton skeleton-title"></div>
             <div class="skeleton skeleton-subtitle"></div>
           </div>
-          <div class="categories-list" style="margin-top:64px">
+          <div class="categories-list" style="margin-top:48px">
             <div class="skeleton skeleton-card"></div>
           </div>
         </div>
 
-        <!-- STATUS -->
         <div id="status-section" class="status-section" style="display:none">
           <div class="status-icon-box" id="status-icon-box">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -53,10 +48,9 @@
             </svg>
           </div>
           <h1 class="status-title" id="status-title">All Systems Operational</h1>
-          <p class="status-subtitle" id="status-subtitle">Last check at —</p>
+          <p class="status-subtitle" id="status-subtitle">Last check at &mdash;</p>
         </div>
 
-        <!-- BARS LEGEND -->
         <div id="bars-legend" class="bars-legend" style="display:none">
           <span class="bars-legend-item">
             <span class="bars-legend-swatch swatch-pink"></span>Operational
@@ -72,12 +66,11 @@
           </span>
         </div>
 
-        <!-- CATEGORY -->
         <div id="categories-container" class="categories-list" style="display:none">
           <div class="category-card">
             <div class="category-header" id="cat-header">
               <div class="category-name-wrap">
-                <span class="category-name">azuso.n1yshi.dev</span>
+                <span class="category-name">oracle.n1yshi.dev</span>
               </div>
             </div>
             <div class="monitor-list">
@@ -89,7 +82,7 @@
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     </span>
-                    <span class="monitor-name">azuso.n1yshi.dev</span>
+                    <span class="monitor-name">oracle.n1yshi.dev</span>
                     <span class="monitor-sla" id="monitor-sla">100.000% uptime</span>
                   </div>
                 </div>
@@ -102,7 +95,6 @@
       </div>
     </main>
 
-    <!-- FOOTER -->
     <footer class="status-footer">
       <div class="footer-inner">
         <div class="footer-powered">Powered by <strong>client-side checks</strong></div>

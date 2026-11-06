@@ -1,5 +1,5 @@
 (function () {
-  const CACHE_KEY = 'anilist_profile_v3';
+  const CACHE_KEY = 'anilist_profile_v4';
   const CACHE_TTL = 3600000;
 
   const PROFILE_QUERY = `
@@ -7,14 +7,6 @@
       User(name: $username) {
         name
         avatar { large }
-        bannerImage
-        statistics {
-          anime {
-            count
-            episodesWatched
-            minutesWatched
-          }
-        }
         favourites {
           anime(page: 1, perPage: 20) {
             nodes { id title { romaji english } }
@@ -74,21 +66,6 @@
     if (pic && user.avatar?.large) {
       pic.src = user.avatar.large;
       pic.alt = user.name + ' avatar';
-    }
-
-    const banner = document.getElementById('bg-banner');
-    if (banner && user.bannerImage) {
-      banner.style.backgroundImage = 'url(' + user.bannerImage + ')';
-    }
-
-    const stats = user.statistics?.anime;
-    if (stats) {
-      const el = document.getElementById('stat-count');
-      if (el) el.textContent = stats.count;
-      const el2 = document.getElementById('stat-episodes');
-      if (el2) el2.textContent = stats.episodesWatched;
-      const el3 = document.getElementById('stat-minutes');
-      if (el3) el3.textContent = stats.minutesWatched;
     }
 
     var favs = user.favourites;
@@ -165,7 +142,7 @@
     const timeout = setTimeout(function () { controller.abort(); }, 10000);
     const start = performance.now();
     try {
-      await fetch('https://azuso.n1yshi.dev', { signal: controller.signal });
+      await fetch('https://oracle.n1yshi.dev', { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
       clearTimeout(timeout);
       const ms = Math.round(performance.now() - start);
       statusDot.className = 'status-dot online';
